@@ -99,7 +99,7 @@ public class GatosService {
         RequestBody body = RequestBody.create(mediaType, "");
         Request request = new Request.Builder()
                 .url("https://api.thecatapi.com/v1/favourites")
-                .method("GET", body)
+                .method("GET", null)
                 .addHeader("x-api-key", apikey)
                 .build();
         Response response = client.newCall(request).execute();
@@ -113,13 +113,61 @@ public class GatosService {
         gatosFav[] gatosArray = gson.fromJson(elJson, gatosFav[].class);
 
         if (gatosArray.length > 0) {
-            int min = 1; 
+            int min = 1;
             int max = gatosArray.length;
-            int aleatorio = (int) (Math.random()*((max-min)-1))+min;
-            int indice = aleatorio -1;
+            int aleatorio = (int) (Math.random() * ((max - min) + 1)) + min;
+            int indice = aleatorio - 1;
+
+            gatosFav gatoFav = gatosArray[indice];
             
-            gatosFav gatoFav = gatosArray[indice]; 
+            Image imagen = null;
+            try {
+                URL url = new URL(gatoFav.image.getUrl());
+                HttpURLConnection http = (HttpURLConnection) url.openConnection();
+                http.addRequestProperty("User-Agent", "");
+                BufferedImage bufferedImage = ImageIO.read(http.getInputStream());
+                ImageIcon fondoGato = new ImageIcon(bufferedImage);
+
+                if (fondoGato.getIconWidth() > 800 || fondoGato.getIconHeight() > 400) {
+
+                    Image fondo = fondoGato.getImage();
+                    Image modificada = fondo.getScaledInstance(800, 400, java.awt.Image.SCALE_SMOOTH);
+                    fondoGato = new ImageIcon(modificada);
+                }
+
+                String menu = "Opciones: \n1.- Cambiar Gatitos \n2.-Eliminar Favorito \n3.-Volver ";
+                String botones[] = {"Ver Otra imagen", "Eliminar Favoritos", "Volver"};
+                String id_gato = gatoFav.getId();
+                String opcion = (String) JOptionPane.showInputDialog(null, menu, id_gato, JOptionPane.INFORMATION_MESSAGE,
+                        fondoGato, botones, botones[0]);
+
+                int seleccion = -1;
+
+                for (int i = 0; i < botones.length; i++) {
+                    if (opcion.equals(botones[i])) {
+                        seleccion = i;
+                    }
+                }
+
+                switch (seleccion) {
+                    case 0:
+                        verFavorito(apikey);
+                        break;
+                    case 1:
+                        borrarFavorito(gatoFav);
+                        break;
+                    default:
+                        break;
+                }
+
+            } catch (IOException e) {
+                System.out.println(e);
+            }
         }
 
+    }
+    
+    public static void borrarFavorito(gatosFav gatoFav){
+        
     }
 }
