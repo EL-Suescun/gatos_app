@@ -119,7 +119,7 @@ public class GatosService {
             int indice = aleatorio - 1;
 
             gatosFav gatoFav = gatosArray[indice];
-            
+
             Image imagen = null;
             try {
                 URL url = new URL(gatoFav.image.getUrl());
@@ -166,8 +166,27 @@ public class GatosService {
         }
 
     }
-    
-    public static void borrarFavorito(gatosFav gatoFav){
-        
+
+    public static void borrarFavorito(gatosFav gatoFav) {
+        try {
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            MediaType mediaType = MediaType.parse("application/json");
+            RequestBody body = RequestBody.create(mediaType, "");
+            Request request = new Request.Builder()
+                    .url("https://api.thecatapi.com/v1/favourites/" + gatoFav.getId() + "")
+                    .method("DELETE", body)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("x-api-key", gatoFav.getApikey())
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (response.code() == 200) {
+                JOptionPane.showMessageDialog(null, "Gato Favorito " + gatoFav.image_id + " Eliminado ");
+            } else {
+                JOptionPane.showMessageDialog(null, "Algo a fallado " + response.code());
+            }
+        } catch (IOException e) {
+            System.out.println(e);
+        }
     }
 }
