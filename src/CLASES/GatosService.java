@@ -2,62 +2,52 @@ package CLASES;
 
 import com.google.gson.Gson;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import okhttp3.*;
+import sun.management.Agent;
 
 public class GatosService {
 
     public static void verGatos() throws IOException {
-        //1. Vamos a traer los datos de la api
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
-        MediaType mediaType = MediaType.parse("text/plain");
-        RequestBody body = RequestBody.create(mediaType, "");
+        OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url("https://api.thecatapi.com/v1/images/search")
-                .method("GET", body)
+                .method("GET", null)
                 .build();
         Response response = client.newCall(request).execute();
 
-        String elJson = response.body().string();
+        String json = response.body().string();
+        json = json.substring(1, json.length() - 1);
 
-        //cortar los corchetes
-        elJson = elJson.substring(1, elJson.length());
-        elJson = elJson.substring(0, elJson.length() - 1);
-
-        //Crear un objeto de la clase Gson
         Gson gson = new Gson();
-        Gatos gatos = gson.fromJson(elJson, Gatos.class);
+        Gatos gatos = gson.fromJson(json, Gatos.class);
 
-        //Redimensionar en caso de necesitar
-        Image image = null;
+        Image imagen = null;
         try {
             URL url = new URL(gatos.getUrl());
-            image = ImageIO.read(url);
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.addRequestProperty("User-Agent", "");
+            BufferedImage bufferedImage = ImageIO.read(http.getInputStream());
+            ImageIcon fondoGato = new ImageIcon(bufferedImage);
 
-            ImageIcon fondoGato = new ImageIcon(image);
+            if (fondoGato.getIconWidth() > 800 || fondoGato.getIconHeight() > 400) {
 
-            if (fondoGato.getIconWidth() > 800) {
-                //redimensionamos
                 Image fondo = fondoGato.getImage();
-                Image modificada = fondo.getScaledInstance(800, 600, java.awt.Image.SCALE_SMOOTH);
+                Image modificada = fondo.getScaledInstance(800, 400, java.awt.Image.SCALE_SMOOTH);
                 fondoGato = new ImageIcon(modificada);
             }
 
-            String menu = "Opcines: "
-                    + "\n 1. Ver otra imagen "
-                    + "\n 2.Marcar como Favorito"
-                    + "\n 3. Volver al menu"
-                    + "\n";
-
-            String[] botones = {"ver otra imagen", "favorito", "volver"};
+            String menu = "Opciones: \n1.- Cambiar Gatitos \n2.-Favorito \n3.-Volver ";
+            String botones[] = {"Ver Otra imagen", "Favoritos", "Volver"};
             String id_gato = gatos.getId();
-            String opcion = (String) JOptionPane.showInputDialog(null, menu, id_gato,
-                    JOptionPane.INFORMATION_MESSAGE, fondoGato, botones, botones[0]);
+            String opcion = (String) JOptionPane.showInputDialog(null, menu, id_gato, JOptionPane.INFORMATION_MESSAGE,
+                    fondoGato, botones, botones[0]);
 
             int seleccion = -1;
 
@@ -81,9 +71,10 @@ public class GatosService {
         } catch (IOException e) {
             System.out.println(e);
         }
+
     }
 
     public static void favoritoGato(Gatos gato) {
-        
+
     }
 }
