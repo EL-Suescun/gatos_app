@@ -79,7 +79,7 @@ public class GatosService {
             OkHttpClient client = new OkHttpClient().newBuilder()
                     .build();
             MediaType mediaType = MediaType.parse("application/json");
-            RequestBody body = RequestBody.create(mediaType, "{\r\n    \"image_id\":\""+gato.getId()+"\"\r\n}");
+            RequestBody body = RequestBody.create(mediaType, "{\r\n    \"image_id\":\"" + gato.getId() + "\"\r\n}");
             Request request = new Request.Builder()
                     .url("https://api.thecatapi.com/v1/favourites")
                     .method("POST", body)
@@ -90,5 +90,36 @@ public class GatosService {
         } catch (IOException e) {
             System.out.println(e);
         }
+    }
+
+    public static void verFavorito(String apikey) throws IOException {
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        MediaType mediaType = MediaType.parse("text/plain");
+        RequestBody body = RequestBody.create(mediaType, "");
+        Request request = new Request.Builder()
+                .url("https://api.thecatapi.com/v1/favourites")
+                .method("GET", body)
+                .addHeader("x-api-key", apikey)
+                .build();
+        Response response = client.newCall(request).execute();
+
+        //guardamos el string con la respuesta
+        String elJson = response.body().string();
+
+        //creamos el objeto gson
+        Gson gson = new Gson();
+
+        gatosFav[] gatosArray = gson.fromJson(elJson, gatosFav[].class);
+
+        if (gatosArray.length > 0) {
+            int min = 1; 
+            int max = gatosArray.length;
+            int aleatorio = (int) (Math.random()*((max-min)-1))+min;
+            int indice = aleatorio -1;
+            
+            gatosFav gatoFav = gatosArray[indice]; 
+        }
+
     }
 }
